@@ -29,11 +29,11 @@ public class act_Validar_Login extends AppCompatActivity implements Asynchtask {
         //Construimos el mensaje a mostrar
         //txtSaludo.setText("Hola!, Bienvenido \n " + bundle.getString("usr") + "\t Clave:" + bundle.getString("pass"));
 
-        Bundle bundle = this.getIntent().getExtras();
         Map<String, String> datos = new HashMap<String, String>();
-        WebService ws= new WebService("http://uealecpeterson.net/ws/login.php?usr="
-                + bundle.getString("Usr") + "&pass=" + bundle.getString("clave"),
-                datos, SaludoActivity.this, SaludoActivity.this);
+        WebService ws= new WebService("https://uealecpeterson.net/ws/login.php?usr="
+                                        + bundle.getString("usr") + "&pass=" + bundle.getString("pass"),
+                                        datos, act_Validar_Login.this, act_Validar_Login.this);
+
         ws.execute("GET");
 
 
@@ -41,7 +41,7 @@ public class act_Validar_Login extends AppCompatActivity implements Asynchtask {
 
     @Override
     public void processFinish(String result) throws JSONException {
-        //TextView txtSaludo = (TextView)findViewById(R.id.lblMensaje);
-        //txtSaludo.setText("Hola!, Bienvenido \n " + bundle.getString("usr") + "\t Clave:" + bundle.getString("pass"));
+        TextView txtSaludo = (TextView)findViewById(R.id.lblMensaje);
+        txtSaludo.setText("Respuesta WS: " + result);
     }
 }

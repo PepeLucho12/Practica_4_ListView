@@ -25,7 +25,7 @@ public class WebService extends AsyncTask<String, Long, String> {
     //Resultado
     private String xml=null;
 
-    //Clase a la cual se le retorna los datos dle ws
+    //Clase a la cual se le retorna los datos del ws
     private Asynchtask callback=null;
 
     public Asynchtask getCallback() {

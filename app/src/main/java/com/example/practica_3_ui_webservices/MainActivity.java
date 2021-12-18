@@ -4,70 +4,93 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.method.ScrollingMovementMethod;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.example.practica_3_ui_webservices.Interfaz.Api_User;
-import com.example.practica_3_ui_webservices.Modelos.User;
+
+import com.example.practica_3_ui_webservices.Interface.Api_coments;
+import com.example.practica_3_ui_webservices.Model.post_Coments;
+import com.example.practica_3_ui_webservices.WebService.Asynchtask;
+import com.example.practica_3_ui_webservices.WebService.WebService;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
+import retrofit2.http.POST;
 
-public class MainActivity extends AppCompatActivity {
-    EditText tvNombre;
-    TextView tvInformacion;
-    Button btnBuscar;
+public class MainActivity extends AppCompatActivity /*implements Asynchtask*/ {
 
+    private TextView tvComents;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        tvNombre=findViewById(R.id.teNombre);
-        tvInformacion=findViewById(R.id.txtInfo);
-        btnBuscar=findViewById(R.id.btnBuscar);
+        tvComents = findViewById(R.id.txtInfo);
+        tvComents.setMovementMethod(new ScrollingMovementMethod());
+        getPosts();
 
-        btnBuscar.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                MostrarInfo(tvNombre.getText().toString());
-            }
-        });
+        /*Map<String, String> datos = new HashMap<String, String>();
+        WebService ws= new WebService("https://api-uat.kushkipagos.com/transfer/v1/bankList",
+                datos, MainActivity.this, MainActivity.this);
+        ws.execute("GET","Public-Merchant-Id","84e1d0de1fbf437e9779fd6a52a9ca18");*/
+
     }
 
-    private void MostrarInfo(String name){
-        Retrofit retrofit=new Retrofit.Builder().baseUrl("https://gorest.co.in/").addConverterFactory(GsonConverterFactory.create()).build();
+    private void getPosts(){
 
-        Api_User api_user=retrofit.create(Api_User.class);
-        Call<User> call=api_user.find(name);
-        call.enqueue(new Callback<User>() {
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("https://jsonplaceholder.typicode.com/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        Api_coments api_coments = retrofit.create(Api_coments.class);
+
+        Call<List<post_Coments>> call = api_coments.getPosts();
+
+        call.enqueue(new Callback<List<post_Coments>>() {
             @Override
-            public void onResponse(Call<User> call, Response<User> response) {
-                try {
-                    if(response.isSuccessful()){
-                        User u= response.body();
-                        tvInformacion.setText("id: " + u.getId().toString() + " Nombre: " + u.getName().toString() +
-                                " Genero: " + u.getGender().toString() +" Correo: " + u.getEmail().toString() + " Estado: " + u.getStatus().toString() + "\n");
-                    }
-
-                }catch (Exception ex){
-                    Toast.makeText(MainActivity.this, ex.getMessage(), Toast.LENGTH_SHORT).show();
+            public void onResponse(Call<List<post_Coments>> call, Response<List<post_Coments>> response) {
+                if(!response.isSuccessful()){
+                    tvComents.setText("Codigo: "+response.code());
+                    return;
                 }
+
+                List<post_Coments> coments_List = response.body();
+
+                for(post_Coments coments: coments_List){
+                    String content = "";
+                    content += "postId: "+ coments.getPostId() + "\n";
+                    content += "Id: "+ coments.getId() + "\n";
+                    content += "Name: "+ coments.getName() + "\n";
+                    content += "Email: "+ coments.getEmail() + "\n";
+                    content += "Body: "+ coments.getBody() + "\n\n";
+
+                    tvComents.append(content);
+                }
+
             }
 
             @Override
-            public void onFailure(Call<User> call, Throwable t) {
-                Toast.makeText(MainActivity.this, "Error de Conexión", Toast.LENGTH_SHORT).show();
+            public void onFailure(Call<List<post_Coments>> call, Throwable t) {
+                tvComents.setText(t.getMessage());
             }
         });
     }
+
 
     public void btnEnviar(View view) {
         //Creamos el Intent
@@ -86,4 +109,18 @@ public class MainActivity extends AppCompatActivity {
         // Iniciamos la nueva actividad
         startActivity(intent);
     }
+
+   /* @Override
+    public void processFinish(String result) throws JSONException {
+        TextView txtBancos = (TextView)findViewById(R.id.txtInfo);
+
+        String lstBancos="";
+        JSONArray JSONlista =  new JSONArray(result);
+        for(int i=0; i< JSONlista.length();i++){
+            JSONObject banco=  JSONlista.getJSONObject(i);
+            lstBancos = lstBancos + "\n" + banco.getString("name").toString();
+        }
+
+        txtBancos.setText("Respuesta WS Lista de Bancos" +  lstBancos);
+    }*/
 }
